@@ -1,0 +1,580 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ART Clinical GPS</title>
+<style>
+:root{
+  --navy:#173a5e; --blue:#2468a2; --green:#2e7d32; --red:#b3261e;
+  --amber:#b26a00; --bg:#eef3f7; --card:#ffffff; --line:#d8e1e8;
+  --text:#1f2d3a; --muted:#607080; --purple:#6b4fa1;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:18px}
+header h1{margin:0;font-size:24px}
+header p{margin:5px 0 0;font-size:13px;opacity:.9}
+main{max-width:1200px;margin:18px auto;padding:0 14px 40px}
+.layout{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 4px 14px rgba(20,40,60,.07)}
+.badge{display:inline-block;border-radius:999px;background:#e8f0f8;color:var(--navy);padding:6px 10px;font-weight:700;font-size:13px}
+.question{font-size:24px;line-height:1.25;font-weight:800;margin:14px 0}
+.script{background:#eef6ff;border-left:5px solid var(--blue);padding:14px;border-radius:8px;margin:12px 0;font-size:17px}
+.note{background:#f7f9fb;border:1px solid var(--line);padding:12px;border-radius:8px;margin:10px 0}
+.warning{background:#fff4e3;border-left:5px solid var(--amber);padding:12px;border-radius:8px;margin:10px 0}
+.stop{background:#fdeceb;border-left:5px solid var(--red);padding:12px;border-radius:8px;margin:10px 0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+button{border:none;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(.98)}
+.primary{background:var(--blue);color:#fff}
+.yes{background:var(--green);color:#fff}
+.no{background:var(--red);color:#fff}
+.amber{background:var(--amber);color:#fff}
+.purple{background:var(--purple);color:#fff}
+.secondary{background:#e8eef3;color:#22313f}
+.response-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:650px){.response-grid{grid-template-columns:1fr}}
+.response{background:#f7f9fb;border:1px solid var(--line);color:var(--text);text-align:left}
+h2,h3{margin-top:0}
+label{display:block;font-weight:700;margin:10px 0 5px}
+input,textarea,select{width:100%;padding:10px;border:1px solid #b9c7d3;border-radius:8px;font-size:15px}
+textarea{min-height:70px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:650px){.row{grid-template-columns:1fr}}
+.counter{text-align:center;font-size:56px;font-weight:800;color:var(--navy);margin:8px 0}
+.progress{height:16px;background:#e6edf3;border-radius:999px;overflow:hidden}
+.bar{height:100%;width:0;background:var(--green);transition:.2s}
+.small{font-size:13px;padding:8px 10px}
+.timeline{max-height:220px;overflow:auto;font-size:13px;color:var(--muted);border-top:1px solid var(--line);margin-top:12px;padding-top:8px}
+.timeline div{padding:6px 0;border-bottom:1px dashed #e1e7ec}
+canvas{width:100%;height:170px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.summary{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:8px}
+.hidden{display:none}
+.footer{font-size:12px;color:var(--muted);margin-top:10px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{background:#e8eef3;color:#22313f}
+.tab.active{background:var(--navy);color:white}
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:650px){.checklist{grid-template-columns:1fr}}
+.check{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px}
+.check input{width:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>ART Clinical GPS</h1>
+  <p>Offline learning and workflow aid for clinicians trained in ART. Uses general guidance, not proprietary training scripts.</p>
+</header>
+
+<main>
+<div class="layout">
+  <section class="card">
+    <div id="stepBadge" class="badge">Step 1</div>
+    <div id="question" class="question"></div>
+    <div id="script"></div>
+    <div id="clinicalNote"></div>
+    <div id="responses"></div>
+    <div id="actions" class="actions"></div>
+  </section>
+
+  <aside>
+    <section class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="showPanel('tracker',this)">Tracker</button>
+        <button class="tab" onclick="showPanel('counterPanel',this)">Counter</button>
+        <button class="tab" onclick="showPanel('bodyPanel',this)">Body Scan</button>
+      </div>
+
+      <div id="tracker">
+        <label>Target scene</label>
+        <textarea id="target" placeholder="Brief, non-identifying description"></textarea>
+
+        <div class="row">
+          <div>
+            <label>Initial SUDS</label>
+            <input id="initialSuds" type="number" min="0" max="10" placeholder="0–10">
+          </div>
+          <div>
+            <label>Current SUDS</label>
+            <input id="currentSuds" type="number" min="0" max="10" placeholder="0–10">
+          </div>
+        </div>
+
+        <label>Emotion(s)</label>
+        <input id="emotions" placeholder="Fear, anger, shame...">
+
+        <label>Body sensation(s)</label>
+        <input id="body" placeholder="Chest, throat, jaw...">
+
+        <label>Negative belief</label>
+        <input id="negativeBelief" placeholder="I am unsafe...">
+
+        <label>Adaptive belief / VIR theme</label>
+        <input id="adaptiveBelief" placeholder="I have choices...">
+
+        <div class="actions">
+          <button class="secondary small" onclick="recordSuds()">Record SUDS</button>
+          <button class="secondary small" onclick="saveCheckpoint()">Checkpoint</button>
+          <button class="secondary small" onclick="generateSummary()">Summary</button>
+          <button class="secondary small" onclick="resetAll()">Reset</button>
+        </div>
+        <div id="timeline" class="timeline"></div>
+      </div>
+
+      <div id="counterPanel" class="hidden">
+        <h3>40-Movement Counter</h3>
+        <div id="count" class="counter">0</div>
+        <div class="progress"><div id="bar" class="bar"></div></div>
+        <div class="actions">
+          <button class="primary" onclick="addMovement()">+1</button>
+          <button class="secondary" onclick="addTen()">+10</button>
+          <button class="secondary" onclick="resetCounter()">Reset</button>
+        </div>
+        <p class="footer">Use +10 after each group of ten movements to reduce distraction.</p>
+      </div>
+
+      <div id="bodyPanel" class="hidden">
+        <h3>Body Scan</h3>
+        <div class="checklist">
+          <label class="check"><input type="checkbox" value="Head/face">Head/face</label>
+          <label class="check"><input type="checkbox" value="Jaw/throat">Jaw/throat</label>
+          <label class="check"><input type="checkbox" value="Shoulders/arms">Shoulders/arms</label>
+          <label class="check"><input type="checkbox" value="Chest">Chest</label>
+          <label class="check"><input type="checkbox" value="Abdomen">Abdomen</label>
+          <label class="check"><input type="checkbox" value="Back">Back</label>
+          <label class="check"><input type="checkbox" value="Hips/pelvis">Hips/pelvis</label>
+          <label class="check"><input type="checkbox" value="Legs/feet">Legs/feet</label>
+        </div>
+        <label>Residual sensation notes</label>
+        <textarea id="bodyNotes"></textarea>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h3>SUDS Trend</h3>
+      <canvas id="sudsChart" width="500" height="170"></canvas>
+      <p class="footer">Record SUDS after meaningful processing points.</p>
+    </section>
+  </aside>
+</div>
+
+<section id="summaryCard" class="card hidden" style="margin-top:16px">
+  <h3>Editable Session Summary</h3>
+  <div id="summary" class="summary"></div>
+  <div class="actions">
+    <button class="primary" onclick="copySummary()">Copy Summary</button>
+  </div>
+</section>
+</main>
+
+<script>
+const nodes = {
+start:{
+ step:"1. Readiness",
+ q:"Is the client regulated, present-oriented, and clinically appropriate for trauma processing today?",
+ script:"“Before we begin, take a moment to notice your breathing and the room around you. Do you feel able to stay present while we work?”",
+ note:"Confirm safety, orientation, capacity to stop, and access to grounding.",
+ yes:"target", no:"stabilize"
+},
+stabilize:{
+ step:"Pause and Stabilize",
+ q:"The client is not ready to begin trauma processing.",
+ script:"“Let’s pause the memory work and help your nervous system settle first.”",
+ stop:"Use grounding, orientation, containment, breathing, or resourcing. Do not force processing.",
+ next:"start", nextLabel:"Reassess Readiness"
+},
+target:{
+ step:"2. Target",
+ q:"Has one specific target scene been identified?",
+ script:"“What single moment or snapshot feels most distressing right now?”",
+ yes:"baseline", no:"narrowTarget"
+},
+narrowTarget:{
+ step:"Narrow the Target",
+ q:"Help the client move from a broad issue to one scene.",
+ script:"“When you think about the whole situation, which single moment stands out most strongly?”",
+ note:"Avoid targeting an entire childhood, relationship, or life chapter at once.",
+ next:"baseline", nextLabel:"Target Chosen"
+},
+baseline:{
+ step:"3. Baseline",
+ q:"Have you recorded SUDS, emotions, body sensations, and the negative belief?",
+ script:"“When you bring up that scene now, how disturbing is it from 0 to 10? What emotion and body sensation are strongest?”",
+ yes:"orientation", no:"collectBaseline"
+},
+collectBaseline:{
+ step:"Collect Baseline",
+ q:"Complete the baseline fields before proceeding.",
+ script:"“What does the scene make you believe about yourself right now?”",
+ next:"orientation", nextLabel:"Baseline Complete"
+},
+orientation:{
+ step:"4. Explain the Process",
+ q:"Does the client understand the process, consent, and know they can stop?",
+ script:"“You can keep the details private. Notice the image, feelings, and body sensations while following the movement. You may ask to stop at any time.”",
+ yes:"movement", no:"clarify"
+},
+clarify:{
+ step:"Clarify and Consent",
+ q:"Address questions and confirm understanding.",
+ script:"“What would help you feel more comfortable or more in control before we begin?”",
+ next:"movement", nextLabel:"Client Ready"
+},
+movement:{
+ step:"5. Processing Set",
+ q:"Complete a set of approximately 40 eye movements.",
+ script:"“Bring up the scene, notice what happens inside, and follow my hand with your eyes.”",
+ note:"Use the counter if helpful. Maintain a pace the client can track comfortably.",
+ next:"postSet", nextLabel:"Set Complete"
+},
+postSet:{
+ step:"6. After the Set",
+ q:"What did the client report?",
+ script:"Ask: “What do you notice now?”",
+ responses:[
+  ["The image changed","imageChanged"],
+  ["Emotion changed","emotionChanged"],
+  ["Body sensation changed","bodyChanged"],
+  ["Nothing changed","noChange"],
+  ["New memory appeared","newMemory"],
+  ["Client became flooded","flooded"],
+  ["Client seems dissociated","dissociated"],
+  ["Client is analyzing/intellectualizing","intellectualizing"]
+ ]
+},
+imageChanged:{
+ step:"Follow the Shift",
+ q:"Is the changed image still connected to the same target?",
+ script:"“Stay with what changed and notice what comes next.”",
+ yes:"sudsCheck", no:"parkTarget"
+},
+emotionChanged:{
+ step:"Follow the Emotion",
+ q:"Did the emotional intensity decrease or transform?",
+ script:"“Notice that change and stay with whatever is present now.”",
+ yes:"sudsCheck", no:"movement"
+},
+bodyChanged:{
+ step:"Follow the Body",
+ q:"Did the body sensation decrease, move, or change quality?",
+ script:"“Notice where the sensation is now and what it is doing.”",
+ yes:"sudsCheck", no:"movement"
+},
+noChange:{
+ step:"No Change",
+ q:"Has there been no meaningful change after several sets?",
+ script:"“Sometimes change is subtle. Notice whether anything is even slightly different.”",
+ yes:"troubleshoot", no:"movement"
+},
+newMemory:{
+ step:"New Memory",
+ q:"Is the new memory clearly linked to the current target?",
+ script:"“Does this feel like part of the same experience, or like a different target?”",
+ yes:"movement", no:"parkTarget"
+},
+parkTarget:{
+ step:"Park a New Target",
+ q:"Record the unrelated material for later and return to the original target.",
+ script:"“Let’s note that so we do not lose it, and return to the scene we started with.”",
+ next:"movement", nextLabel:"Return to Target"
+},
+flooded:{
+ step:"Flooding",
+ q:"The client is outside the window of tolerance.",
+ script:"“Pause. Feel your feet on the floor and look around the room. Tell me where you are right now.”",
+ stop:"Stop processing. Reorient and regulate before deciding whether to continue.",
+ next:"readinessAfterPause", nextLabel:"Reassess"
+},
+dissociated:{
+ step:"Dissociation",
+ q:"The client appears detached, far away, confused, or unresponsive.",
+ script:"“Look at me and name three things you can see in the room. What day is it, and where are you?”",
+ stop:"Do not continue eye movements until the client is clearly present and stable.",
+ next:"readinessAfterPause", nextLabel:"Reassess"
+},
+readinessAfterPause:{
+ step:"Reassessment",
+ q:"Has the client returned to a stable, present state?",
+ script:"“Do you feel fully back in the room and able to choose whether we continue?”",
+ yes:"movement", no:"closure"
+},
+intellectualizing:{
+ step:"Return to Experience",
+ q:"Can the client shift from explaining to noticing?",
+ script:"“Rather than figuring it out, notice the image, emotion, or body sensation that is present right now.”",
+ yes:"movement", no:"troubleshoot"
+},
+troubleshoot:{
+ step:"Troubleshooting",
+ q:"Which issue best fits?",
+ script:"Choose the closest clinical issue.",
+ responses:[
+  ["Target is too broad","narrowTarget"],
+  ["Client cannot visualize","nonvisual"],
+  ["Blocking belief may be present","blockingBelief"],
+  ["Competing target keeps intruding","parkTarget"],
+  ["Client remains dysregulated","stabilize"],
+  ["Unsure / protocol feels stuck","consult"]
+ ]
+},
+nonvisual:{
+ step:"Nonvisual Processing",
+ q:"Can the client work from emotion, body sensation, sound, or another sensory impression?",
+ script:"“You do not need a clear picture. Notice the strongest feeling, sensation, sound, or sense of the scene.”",
+ yes:"movement", no:"consult"
+},
+blockingBelief:{
+ step:"Blocking Belief",
+ q:"Can the client identify what feels unsafe about letting the distress change?",
+ script:"“Is there any part of you that believes something bad would happen if this felt less upsetting?”",
+ yes:"movement", no:"consult"
+},
+consult:{
+ step:"Clinical Judgment",
+ q:"Pause and reassess the treatment plan.",
+ script:"Do not force the protocol. Consider stabilization, supervision, consultation, or a different intervention.",
+ next:"closure", nextLabel:"Move to Closure"
+},
+sudsCheck:{
+ step:"7. SUDS Check",
+ q:"Is current SUDS approximately 0–2 and clearly reduced from baseline?",
+ script:"“When you bring up the original scene now, what number is it from 0 to 10?”",
+ yes:"virReady", no:"movement"
+},
+virReady:{
+ step:"8. VIR Readiness",
+ q:"Is the client ready to create a healthy preferred image?",
+ script:"“Would you like to change the image in a way that feels safe, empowering, or complete?”",
+ yes:"virOptions", no:"movement"
+},
+virOptions:{
+ step:"Voluntary Image Replacement",
+ q:"What kind of replacement best fits the client’s need?",
+ script:"Keep the image client-generated.",
+ responses:[
+  ["Safety or rescue","virInstall"],
+  ["Protection or boundary","virInstall"],
+  ["Justice or accountability","virInstall"],
+  ["Comfort or nurturing","virInstall"],
+  ["Empowerment or choice","virInstall"],
+  ["A peaceful ending","virInstall"]
+ ]
+},
+virInstall:{
+ step:"9. Reinforce VIR",
+ q:"Complete another movement set while the client holds the preferred image.",
+ script:"“Hold that new image and notice what feels different now.”",
+ next:"bodyScan", nextLabel:"Set Complete"
+},
+bodyScan:{
+ step:"10. Body Scan",
+ q:"Is there any residual tension, discomfort, or emotional charge in the body?",
+ script:"“Slowly scan from your head to your feet. Where do you notice anything remaining?”",
+ yes:"bodyProcess", no:"futureTemplate"
+},
+bodyProcess:{
+ step:"Target Residual Sensation",
+ q:"Process the remaining body sensation.",
+ script:"“Focus on that sensation and follow the movement.”",
+ next:"bodyScan", nextLabel:"Recheck Body"
+},
+futureTemplate:{
+ step:"11. Future Template",
+ q:"When the client imagines a likely future trigger, does distress return?",
+ script:"“Imagine encountering a similar situation in the future. What do you notice?”",
+ yes:"futureProcess", no:"closure"
+},
+futureProcess:{
+ step:"Future Trigger Processing",
+ q:"Process the future-trigger distress and then retest.",
+ script:"“Stay with what comes up in that future situation and follow the movement.”",
+ next:"futureTemplate", nextLabel:"Retest"
+},
+closure:{
+ step:"12. Closure",
+ q:"Is the client grounded, present-oriented, and stable enough to end?",
+ script:"“Take a breath, look around the room, and notice that the session is ending. What do you need before you leave?”",
+ yes:"complete", no:"stabilize"
+},
+complete:{
+ step:"Complete",
+ q:"Session workflow complete.",
+ script:"Record final SUDS, client response, residual material, and follow-up plan.",
+ next:"start", nextLabel:"Start New Session"
+}
+};
+
+let current = "start";
+let movementCount = 0;
+let sudsData = [];
+let checkpoints = [];
+
+function render(id){
+  current = id;
+  const n = nodes[id];
+  document.getElementById("stepBadge").textContent = n.step;
+  document.getElementById("question").textContent = n.q;
+  document.getElementById("script").innerHTML = n.script ? `<div class="script"><b>Therapist prompt</b><br>${n.script}</div>` : "";
+  let noteHtml = "";
+  if(n.note) noteHtml += `<div class="note">${n.note}</div>`;
+  if(n.warning) noteHtml += `<div class="warning">${n.warning}</div>`;
+  if(n.stop) noteHtml += `<div class="stop">${n.stop}</div>`;
+  document.getElementById("clinicalNote").innerHTML = noteHtml;
+
+  const resp = document.getElementById("responses");
+  resp.innerHTML = "";
+  if(n.responses){
+    const grid = document.createElement("div");
+    grid.className = "response-grid";
+    n.responses.forEach(([label,next])=>{
+      const b = document.createElement("button");
+      b.className = "response";
+      b.textContent = label;
+      b.onclick = ()=>render(next);
+      grid.appendChild(b);
+    });
+    resp.appendChild(grid);
+  }
+
+  const actions = document.getElementById("actions");
+  actions.innerHTML = "";
+  if(n.yes || n.no){
+    if(n.yes) actions.appendChild(makeButton("YES","yes",()=>render(n.yes)));
+    if(n.no) actions.appendChild(makeButton("NO","no",()=>render(n.no)));
+  } else if(n.next){
+    actions.appendChild(makeButton(n.nextLabel || "Continue","primary",()=>render(n.next)));
+  }
+
+  logStep(n.step);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function makeButton(text,cls,fn){
+  const b=document.createElement("button");
+  b.textContent=text;b.className=cls;b.onclick=fn;return b;
+}
+
+function showPanel(id,btn){
+  ["tracker","counterPanel","bodyPanel"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function addMovement(){movementCount=Math.min(40,movementCount+1);updateCounter()}
+function addTen(){movementCount=Math.min(40,movementCount+10);updateCounter()}
+function resetCounter(){movementCount=0;updateCounter()}
+function updateCounter(){
+  document.getElementById("count").textContent = movementCount===40 ? "40 ✓" : movementCount;
+  document.getElementById("bar").style.width=(movementCount/40*100)+"%";
+}
+
+function val(id){return document.getElementById(id).value.trim()}
+
+function recordSuds(){
+  const v = Number(val("currentSuds"));
+  if(Number.isNaN(v) || v<0 || v>10){alert("Enter a SUDS value from 0 to 10.");return}
+  sudsData.push(v);
+  drawChart();
+  saveCheckpoint();
+}
+
+function drawChart(){
+  const c=document.getElementById("sudsChart"),ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.strokeStyle="#b7c4d0";ctx.lineWidth=1;
+  for(let i=0;i<=10;i++){
+    const y=10+(150/10)*i;
+    ctx.beginPath();ctx.moveTo(35,y);ctx.lineTo(490,y);ctx.stroke();
+  }
+  ctx.fillStyle="#5f6b76";ctx.font="11px Arial";
+  for(let i=0;i<=10;i+=2){ctx.fillText(String(10-i),10,15+(150/10)*i)}
+  if(sudsData.length===0)return;
+  ctx.strokeStyle="#2468a2";ctx.lineWidth=3;ctx.beginPath();
+  sudsData.forEach((v,i)=>{
+    const x=45 + (i*(430/Math.max(1,sudsData.length-1)));
+    const y=10 + ((10-v)/10)*150;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  ctx.fillStyle="#2468a2";
+  sudsData.forEach((v,i)=>{
+    const x=45 + (i*(430/Math.max(1,sudsData.length-1)));
+    const y=10 + ((10-v)/10)*150;
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+  });
+}
+
+function logStep(step){
+  const last=checkpoints[checkpoints.length-1];
+  if(!last || last.step!==step){
+    checkpoints.push({time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),step,suds:val("currentSuds")||"—"});
+    updateTimeline();
+  }
+}
+
+function saveCheckpoint(){
+  checkpoints.push({
+    time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),
+    step:nodes[current].step,
+    suds:val("currentSuds")||"—"
+  });
+  updateTimeline();
+}
+
+function updateTimeline(){
+  document.getElementById("timeline").innerHTML = checkpoints.slice(-25).reverse().map(x=>
+    `<div><b>${x.time}</b> — ${x.step}<br>SUDS: ${x.suds}</div>`
+  ).join("");
+}
+
+function selectedBodyAreas(){
+  return [...document.querySelectorAll('#bodyPanel input[type="checkbox"]:checked')].map(x=>x.value).join(", ");
+}
+
+function generateSummary(){
+  const text =
+`ART SESSION WORKFLOW SUMMARY
+
+Target scene: ${val("target")||"Not entered"}
+Initial SUDS: ${val("initialSuds")||"Not entered"}
+Current/final SUDS: ${val("currentSuds")||"Not entered"}
+SUDS sequence: ${sudsData.length?sudsData.join(" → "):"Not recorded"}
+
+Emotion(s): ${val("emotions")||"Not entered"}
+Body sensation(s): ${val("body")||"Not entered"}
+Body scan areas noted: ${selectedBodyAreas()||"None selected"}
+Residual body notes: ${val("bodyNotes")||"Not entered"}
+
+Negative belief: ${val("negativeBelief")||"Not entered"}
+Adaptive belief / VIR theme: ${val("adaptiveBelief")||"Not entered"}
+Last workflow step reached: ${nodes[current].step}
+
+Documentation reminder:
+Edit this text so it accurately reflects the actual interventions used, client response, risk assessment, clinical judgment, and follow-up plan. Do not paste it into the record without review.`;
+  document.getElementById("summary").textContent=text;
+  document.getElementById("summaryCard").classList.remove("hidden");
+  document.getElementById("summaryCard").scrollIntoView({behavior:"smooth"});
+}
+
+function copySummary(){
+  navigator.clipboard.writeText(document.getElementById("summary").textContent);
+}
+
+function resetAll(){
+  if(!confirm("Clear all entered session information and restart?"))return;
+  ["target","initialSuds","currentSuds","emotions","body","negativeBelief","adaptiveBelief","bodyNotes"].forEach(id=>document.getElementById(id).value="");
+  document.querySelectorAll('#bodyPanel input[type="checkbox"]').forEach(x=>x.checked=false);
+  checkpoints=[];sudsData=[];resetCounter();drawChart();
+  document.getElementById("summaryCard").classList.add("hidden");
+  render("start");
+}
+
+drawChart();
+render("start");
+</script>
+</body>
+</html>

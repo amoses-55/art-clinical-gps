@@ -2,217 +2,316 @@ const sessionSteps = [
     {
         title: "Opening Script",
         prompt: `
-        <p>Introduce the ART process.</p>
-
-        <ul>
-            <li>Explain bilateral eye movements.</li>
-            <li>Confirm the client understands the process.</li>
-            <li>Confirm the client is ready to begin.</li>
-        </ul>
+            <p>Introduce the ART process, explain the eye movements, and confirm that the client is ready to begin.</p>
         `
     },
-
     {
         title: "Target Memory",
         prompt: `
-        <p>Ask the client to identify the target memory.</p>
+            <p>Ask the client to identify the memory, image, situation, or body sensation they want to address.</p>
         `
     },
-
     {
         title: "Scene Match",
         prompt: `
-        <p>Help determine whether the image matches the original event.</p>
+            <p>Ask whether the current scene matches the original event or connects to another related memory.</p>
         `
     },
-
     {
         title: "Utility Check",
         prompt: `
-        <p>Ask if there is anything useful about the memory that should be kept.</p>
+            <p>Ask whether there is any useful information, protection, or lesson the client wants to keep.</p>
         `
     },
-
     {
         title: "Eye Movements",
         prompt: `
-        <h3>40 Eye Movements</h3>
-
-        <p>Complete one full set of bilateral eye movements.</p>
-
-        <button onclick="alert('Future versions will include a built-in eye movement timer.')">
-            Start Eye Movement Set
-        </button>
+            <h3>Eye-Movement Set</h3>
+            <p>Guide one set of approximately 40 eye movements.</p>
         `
     },
-
     {
         title: "SUDS Rating",
-
         prompt: `
+            <div style="max-width:600px; margin:0 auto;">
+                <h3>Subjective Units of Distress</h3>
 
-        <h3>Subjective Units of Distress Scale</h3>
+                <div
+                    id="sudsScore"
+                    style="
+                        font-size:52px;
+                        font-weight:bold;
+                        margin:15px 0;
+                    "
+                >
+                    5 / 10
+                </div>
 
-        <p><strong>Current SUDS:
-        <span id="sudsValue">5</span>/10</strong></p>
+                <div
+                    id="sudsDescription"
+                    style="
+                        font-size:18px;
+                        margin-bottom:20px;
+                    "
+                >
+                    Moderate distress
+                </div>
 
-        <input
-            type="range"
-            id="sudsRange"
-            min="0"
-            max="10"
-            value="5"
-            step="1"
-            oninput="updateSuds(this.value)"
-            style="width:100%;"
-        >
+                <div
+                    id="sudsScale"
+                    style="
+                        display:flex;
+                        flex-direction:column;
+                        gap:6px;
+                        margin:20px auto;
+                        max-width:420px;
+                    "
+                >
+                    ${createSudsButtons()}
+                </div>
 
-        <div style="display:flex;justify-content:space-between;font-size:14px;">
-            <span>0</span>
-            <span>5</span>
-            <span>10</span>
-        </div>
-
-        <br>
-
-        <div id="sudsDescription">
-
-        Moderate distress.<br>
-        Uncomfortable but still functional.
-
-        </div>
-
+                <p style="font-size:14px;">
+                    Tap the number that best represents the client’s current distress.
+                </p>
+            </div>
         `
     },
-
     {
         title: "Body Scan",
         prompt: `
-        <p>Ask the client to notice any remaining body sensations.</p>
+            <p>Ask the client to notice any remaining tension, discomfort, or activation in the body.</p>
         `
     },
-
     {
         title: "Future Template",
         prompt: `
-        <p>Imagine successfully handling a similar future situation.</p>
+            <p>Help the client imagine responding successfully in a future situation.</p>
         `
     },
-
     {
         title: "Session Summary",
         prompt: `
-        <p>Review progress, remaining distress, and homework.</p>
+            <p>Review changes, remaining concerns, and the client’s current distress level.</p>
+            <p><strong>Recorded SUDS:</strong> <span id="summarySuds"></span></p>
         `
     }
-
 ];
 
 let currentStep = 0;
+let selectedSuds = 5;
 
-function showMessage() {
+function createSudsButtons() {
+    const descriptions = [
+        "Peace and complete calm",
+        "Very calm",
+        "Slight distress",
+        "Mild distress",
+        "Noticeable distress",
+        "Moderate distress",
+        "Strong distress",
+        "Quite distressed",
+        "Very distressed",
+        "Extremely distressed",
+        "Unbearable distress"
+    ];
+
+    let buttons = "";
+
+    for (let value = 10; value >= 0; value--) {
+        buttons += `
+            <button
+                type="button"
+                onclick="selectSuds(${value})"
+                id="suds-${value}"
+                style="
+                    width:100%;
+                    display:flex;
+                    align-items:center;
+                    gap:14px;
+                    padding:11px 14px;
+                    border-radius:8px;
+                    border:2px solid transparent;
+                    background:${getSudsColor(value)};
+                    color:${value >= 7 ? "white" : "#222"};
+                    text-align:left;
+                    font-size:16px;
+                "
+            >
+                <strong style="font-size:22px; min-width:30px;">
+                    ${value}
+                </strong>
+
+                <span>
+                    ${descriptions[value]}
+                </span>
+            </button>
+        `;
+    }
+
+    return buttons;
+}
+
+function getSudsColor(value) {
+    if (value >= 9) return "#c62828";
+    if (value >= 7) return "#e65100";
+    if (value >= 5) return "#f9a825";
+    if (value >= 3) return "#fdd835";
+    if (value >= 1) return "#7cb342";
+    return "#42a5f5";
+}
+
+function selectSuds(value) {
+    selectedSuds = value;
+
+    const descriptions = [
+        "Peace and complete calm",
+        "Very calm",
+        "Slight distress",
+        "Mild distress",
+        "Noticeable distress",
+        "Moderate distress",
+        "Strong distress",
+        "Quite distressed",
+        "Very distressed",
+        "Extremely distressed",
+        "Unbearable distress"
+    ];
+
+    document.getElementById("sudsScore").textContent = `${value} / 10`;
+    document.getElementById("sudsDescription").textContent =
+        descriptions[value];
+
+    for (let number = 0; number <= 10; number++) {
+        const button = document.getElementById(`suds-${number}`);
+
+        if (button) {
+            button.style.border =
+                number === value
+                    ? "4px solid #111"
+                    : "2px solid transparent";
+
+            button.style.transform =
+                number === value
+                    ? "scale(1.03)"
+                    : "scale(1)";
+        }
+    }
+}
+
+function showMessage(message) {
+    if (message !== "Opening Script") {
+        const messageBox = document.getElementById("message");
+        messageBox.textContent = message;
+        messageBox.scrollIntoView({ behavior: "smooth" });
+        return;
+    }
+
     currentStep = 0;
     renderSessionStep();
 }
 
 function renderSessionStep() {
-
     const messageBox = document.getElementById("message");
-
     const step = sessionSteps[currentStep];
 
     messageBox.innerHTML = `
-
-        <div class="session-card">
+        <div
+            class="session-card"
+            style="
+                background:white;
+                border-radius:12px;
+                padding:24px;
+                margin:20px auto;
+                max-width:700px;
+                box-shadow:0 2px 10px rgba(0,0,0,.12);
+            "
+        >
+            <p>
+                <strong>
+                    Step ${currentStep + 1} of ${sessionSteps.length}
+                </strong>
+            </p>
 
             <h2>${step.title}</h2>
 
-            <p><strong>Step ${currentStep + 1} of ${sessionSteps.length}</strong></p>
+            <div>${step.prompt}</div>
 
-            ${step.prompt}
+            <div
+                style="
+                    display:flex;
+                    justify-content:center;
+                    gap:12px;
+                    margin-top:25px;
+                "
+            >
+                <button
+                    onclick="previousStep()"
+                    ${currentStep === 0 ? "disabled" : ""}
+                >
+                    Previous
+                </button>
 
-            <br><br>
-
-            <button onclick="previousStep()"
-            ${currentStep===0?"disabled":""}>
-            ◀ Previous
-            </button>
-
-            <button onclick="nextStep()">
-            ${currentStep===sessionSteps.length-1?"Finish":"Next ▶"}
-            </button>
-
+                <button onclick="nextStep()">
+                    ${
+                        currentStep === sessionSteps.length - 1
+                            ? "Finish"
+                            : "Next"
+                    }
+                </button>
+            </div>
         </div>
-
     `;
+
+    if (step.title === "SUDS Rating") {
+        selectSuds(selectedSuds);
+    }
+
+    if (step.title === "Session Summary") {
+        const summary = document.getElementById("summarySuds");
+
+        if (summary) {
+            summary.textContent = `${selectedSuds} / 10`;
+        }
+    }
+
+    messageBox.scrollIntoView({ behavior: "smooth" });
 }
 
-function nextStep(){
-
-    if(currentStep<sessionSteps.length-1){
-
+function nextStep() {
+    if (currentStep < sessionSteps.length - 1) {
         currentStep++;
-
         renderSessionStep();
+    } else {
+        document.getElementById("message").innerHTML = `
+            <div
+                class="session-card"
+                style="
+                    background:white;
+                    border-radius:12px;
+                    padding:24px;
+                    margin:20px auto;
+                    max-width:700px;
+                    box-shadow:0 2px 10px rgba(0,0,0,.12);
+                "
+            >
+                <h2>Session Complete</h2>
 
-    }
+                <p>
+                    Recorded SUDS:
+                    <strong>${selectedSuds} / 10</strong>
+                </p>
 
-    else{
-
-        document.getElementById("message").innerHTML=`
-
-        <div class="session-card">
-
-        <h2>Session Complete</h2>
-
-        <p>The ART protocol is complete.</p>
-
-        <button onclick="showMessage()">
-
-        Start New Session
-
-        </button>
-
-        </div>
-
+                <button onclick="showMessage('Opening Script')">
+                    Start Again
+                </button>
+            </div>
         `;
-
     }
-
 }
 
-function previousStep(){
-
-    if(currentStep>0){
-
+function previousStep() {
+    if (currentStep > 0) {
         currentStep--;
-
         renderSessionStep();
-
     }
-
-}
-
-function updateSuds(value){
-
-    document.getElementById("sudsValue").innerHTML=value;
-
-    const descriptions=[
-
-        "Peace. No distress.",
-        "Very calm.",
-        "Slight distress.",
-        "Mild distress.",
-        "Mild to moderate distress.",
-        "Moderate distress.",
-        "Moderate to strong distress.",
-        "Strong distress.",
-        "Very distressed.",
-        "Extremely distressed.",
-        "Unbearably upset."
-
-    ];
-
-    document.getElementById("sudsDescription").innerHTML=descriptions[value];
-
 }

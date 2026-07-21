@@ -19,10 +19,38 @@ const sessionSteps = [
         title: "Eye Movements",
         prompt: "Guide one set of approximately 40 eye movements while the client notices the scene."
     },
-    {
-        title: "SUDS Rating",
-        prompt: "Ask the client to rate distress from 0 to 10."
-    },
+   {
+    title: "SUDS Rating",
+    prompt: `
+        <p>Ask the client to rate their current distress.</p>
+
+        <div class="suds-scale">
+            <label for="sudsRange">
+                Current SUDS: <strong><span id="sudsValue">5</span></strong>
+            </label>
+
+            <input
+                type="range"
+                id="sudsRange"
+                min="0"
+                max="10"
+                value="5"
+                step="1"
+                oninput="updateSuds(this.value)"
+            >
+
+            <div class="suds-labels">
+                <span>0<br>Calm</span>
+                <span>5<br>Moderate</span>
+                <span>10<br>Extreme</span>
+            </div>
+
+            <p id="sudsDescription">
+                Moderate distress. Uncomfortable but still functional.
+            </p>
+        </div>
+    `
+},
     {
         title: "Body Scan",
         prompt: "Ask the client to notice any remaining tension, discomfort, or activation in the body."

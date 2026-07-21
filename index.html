@@ -1,98 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>ART Clinical GPS</title>
-
-    <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-
-    <header>
-        <h1>ART Clinical GPS</h1>
-
-        <p>
-            Guided Accelerated Resolution Therapy Session Companion
-        </p>
-    </header>
-
-    <main>
-
+function startBasicSession() {
+    document.getElementById("message").innerHTML = `
         <div class="card">
-            <h2>Basic Session</h2>
-
-            <p>
-                Uses the SUDS scale for a streamlined ART session.
-            </p>
-
-            <button
-                type="button"
-                onclick="startBasicSession()"
-            >
-                Start Basic Session
-            </button>
+            <h2>Basic Session Started</h2>
+            <p>The Basic Session button is working.</p>
         </div>
+    `;
+}
 
+function startTypicalSession() {
+    document.getElementById("message").innerHTML = `
         <div class="card">
-            <h2>Typical Session</h2>
-
-            <p>
-                Includes both the ARTometer and SUDS scale.
-            </p>
-
-            <button
-                type="button"
-                onclick="startTypicalSession()"
-            >
-                Start Typical Session
-            </button>
+            <h2>Typical Session Started</h2>
+            <p>The Typical Session button is working.</p>
         </div>
+    `;
+}
 
+function showMessage(message) {
+    document.getElementById("message").innerHTML = `
         <div class="card">
-            <h2>Training</h2>
-
-            <button
-                type="button"
-                onclick="showMessage('Training Mode Coming Soon')"
-            >
-                Open
-            </button>
+            <h2>${message}</h2>
         </div>
-
-        <div class="card">
-            <h2>Script Library</h2>
-
-            <button
-                type="button"
-                onclick="showMessage('Script Library Coming Soon')"
-            >
-                Open
-            </button>
-        </div>
-
-        <div class="card">
-            <h2>Troubleshooting</h2>
-
-            <button
-                type="button"
-                onclick="showMessage('Troubleshooting Coming Soon')"
-            >
-                Open
-            </button>
-        </div>
-
-    </main>
-
-    <div id="message"></div>
-
-    <script src="./app.js?v=4"></script>
-
+    `;
+}
 </body>
 </html>

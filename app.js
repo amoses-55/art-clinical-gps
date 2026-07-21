@@ -1,10 +1,72 @@
 const sessionSteps = [
-    {
-        title: "Opening Script",
-        prompt: `
-            <p>Introduce the ART process, explain the eye movements, and confirm that the client is ready to begin.</p>
-        `
-    },
+{
+    title: "Opening Script",
+    prompt: `
+        <div style="text-align:left; max-width:650px; margin:0 auto;">
+
+            <h3>Purpose</h3>
+            <p>
+                Explain the ART process, establish safety, and confirm that the client is ready to begin.
+            </p>
+
+            <h3>Therapist Prompt</h3>
+
+            <div style="
+                background:#f4f7fb;
+                padding:16px;
+                border-radius:10px;
+                margin-bottom:18px;
+            ">
+                <p>
+                    “Today we will work with a memory, image, situation, or body sensation that is causing distress.
+                    You do not have to tell me every detail. I will guide you through the process while you remain in control.”
+                </p>
+
+                <p>
+                    “I will ask you to follow my hand with your eyes. You can pause or stop at any time.”
+                </p>
+            </div>
+
+            <h3>Checklist</h3>
+
+            <label style="display:block; margin:10px 0;">
+                <input type="checkbox">
+                Explained eye movements
+            </label>
+
+            <label style="display:block; margin:10px 0;">
+                <input type="checkbox">
+                Confirmed client remains in control
+            </label>
+
+            <label style="display:block; margin:10px 0;">
+                <input type="checkbox">
+                Confirmed client can pause or stop
+            </label>
+
+            <label style="display:block; margin:10px 0;">
+                <input type="checkbox">
+                Client is ready to begin
+            </label>
+
+            <h3>Notes</h3>
+
+            <textarea
+                rows="4"
+                placeholder="Optional session notes..."
+                style="
+                    width:100%;
+                    padding:12px;
+                    border-radius:8px;
+                    border:1px solid #bbb;
+                    box-sizing:border-box;
+                    font-size:16px;
+                "
+            ></textarea>
+
+        </div>
+    `
+},
     {
         title: "Target Memory",
         prompt: `

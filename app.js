@@ -80,7 +80,7 @@ function renderSessionStep() {
         <div class="session-card">
             <p>Step ${currentStep + 1} of ${sessionSteps.length}</p>
             <h2>${step.title}</h2>
-            <p>${step.prompt}</p>
+           <div>${step.prompt}</div>
 
             <div class="session-buttons">
                 <button onclick="previousStep()" ${currentStep === 0 ? "disabled" : ""}>
@@ -117,4 +117,25 @@ function previousStep() {
         currentStep--;
         renderSessionStep();
     }
+}
+function updateSuds(value) {
+    document.getElementById("sudsValue").textContent = value;
+
+    let description = "";
+
+    if (value == 0) {
+        description = "Peace. No distress. Complete calm.";
+    } else if (value <= 2) {
+        description = "Slight distress. Sad or anxious, but functioning.";
+    } else if (value <= 4) {
+        description = "Mild to moderate distress. Still able to function.";
+    } else if (value <= 6) {
+        description = "Moderate distress. Uncomfortable but still functional.";
+    } else if (value <= 8) {
+        description = "Very distressed. Trouble focusing or functioning.";
+    } else {
+        description = "Extreme distress. May feel unable to function.";
+    }
+
+    document.getElementById("sudsDescription").textContent = description;
 }

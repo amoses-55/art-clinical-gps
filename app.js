@@ -68,46 +68,57 @@ const sessionSteps = [
     `
 },
     {
-        title: "Target Memory",
-        prompt: `
-            <p>Ask the client to identify the memory, image, situation, or body sensation they want to address.</p>
-        `
-    },
-    {
-        title: "Scene Match",
-        prompt: `
-            <p>Ask whether the current scene matches the original event or connects to another related memory.</p>
-        `
-    },
-    {
-        title: "Utility Check",
-        prompt: `
-            <p>Ask whether there is any useful information, protection, or lesson the client wants to keep.</p>
-        `
-    },
-    {
-        title: "Eye Movements",
-        prompt: `
-            <h3>Eye-Movement Set</h3>
-            <p>Guide one set of approximately 40 eye movements.</p>
-        `
-    },
-    {
-        title: "SUDS Rating",
-        prompt: `
-            <div style="max-width:600px; margin:0 auto;">
-                <h3>Subjective Units of Distress</h3>
+    title: "Target Memory",
+    prompt: `
+        <div style="text-align:left; max-width:650px; margin:0 auto;">
 
-                <div
-                    id="sudsScore"
-                    style="
-                        font-size:52px;
-                        font-weight:bold;
-                        margin:15px 0;
-                    "
-                >
-                    5 / 10
-                </div>
+            <h3>Purpose</h3>
+            <p>
+                Identify the memory, image, trigger, future fear, or body sensation to address.
+            </p>
+
+            <h3>Target Type</h3>
+
+            <select
+                id="targetType"
+                onchange="saveTargetType(this.value)"
+                style="
+                    width:100%;
+                    padding:12px;
+                    font-size:16px;
+                    border-radius:8px;
+                    border:1px solid #bbb;
+                    margin-bottom:18px;
+                "
+            >
+                <option value="">Select a target type</option>
+                <option value="Memory">Memory</option>
+                <option value="Image">Image</option>
+                <option value="Body sensation">Body sensation</option>
+                <option value="Present trigger">Present trigger</option>
+                <option value="Future fear">Future fear</option>
+            </select>
+
+            <h3>Target Description</h3>
+
+            <textarea
+                id="targetDescription"
+                rows="4"
+                placeholder="Use a brief, non-identifying description..."
+                oninput="saveTargetDescription(this.value)"
+                style="
+                    width:100%;
+                    padding:12px;
+                    font-size:16px;
+                    border-radius:8px;
+                    border:1px solid #bbb;
+                    box-sizing:border-box;
+                "
+            ></textarea>
+
+        </div>
+    `
+},
 
                 <div
                     id="sudsDescription"
@@ -382,4 +393,11 @@ function previousStep() {
         currentStep--;
         renderSessionStep();
     }
+}
+function saveTargetType(value) {
+    sessionData.targetType = value;
+}
+
+function saveTargetDescription(value) {
+    sessionData.targetDescription = value;
 }

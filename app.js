@@ -159,8 +159,14 @@ const sessionSteps = [
     }
 ];
 
-let currentStep = 0;
-let selectedSuds = 5;
+let sessionData = {
+    date: new Date().toLocaleDateString(),
+    targetType: "",
+    targetDescription: "",
+    initialSuds: "",
+    finalSuds: "",
+    notes: ""
+};
 
 function createSudsButtons() {
     const descriptions = [

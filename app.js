@@ -11,3 +11,10 @@ let sessionData = {
     finalSuds: "",
     notes: ""
 };
+function saveSceneType(value) {
+    sessionData.sceneType = value;
+}
+
+function saveSceneNote(value) {
+    sessionData.sceneNote = value;
+}

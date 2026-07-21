@@ -1,7 +1,6 @@
-let sessionType = "";
 let currentStep = 0;
 
-const basicSessionSteps = [
+const basicSteps = [
     "Opening Script",
     "Target Memory",
     "Initial SUDS",
@@ -12,52 +11,21 @@ const basicSessionSteps = [
     "Session Summary"
 ];
 
-const typicalSessionSteps = [
-    "Opening Script",
-    "Target Memory",
-    "Scene Match",
-    "Utility Check",
-    "Initial ARTometer",
-    "Initial SUDS",
-    "Eye Movements",
-    "ARTometer Recheck",
-    "SUDS Recheck",
-    "Body Scan",
-    "Future Template",
-    "Session Summary"
-];
-
 function startBasicSession() {
-    sessionType = "basic";
     currentStep = 0;
-    renderSessionStep();
+    renderBasicStep();
 }
 
-function startTypicalSession() {
-    sessionType = "typical";
-    currentStep = 0;
-    renderSessionStep();
-}
-
-function getCurrentSteps() {
-    if (sessionType === "typical") {
-        return typicalSessionSteps;
-    }
-
-    return basicSessionSteps;
-}
-
-function renderSessionStep() {
+function renderBasicStep() {
     const messageBox = document.getElementById("message");
-    const steps = getCurrentSteps();
-    const stepTitle = steps[currentStep];
+    const stepTitle = basicSteps[currentStep];
 
     messageBox.innerHTML = `
-        <div class="card session-card">
+        <div class="card">
 
             <p>
                 <strong>
-                    Step ${currentStep + 1} of ${steps.length}
+                    Step ${currentStep + 1} of ${basicSteps.length}
                 </strong>
             </p>
 
@@ -75,7 +43,7 @@ function renderSessionStep() {
             ">
                 <button
                     type="button"
-                    onclick="previousStep()"
+                    onclick="previousBasicStep()"
                     ${currentStep === 0 ? "disabled" : ""}
                 >
                     Previous
@@ -83,10 +51,10 @@ function renderSessionStep() {
 
                 <button
                     type="button"
-                    onclick="nextStep()"
+                    onclick="nextBasicStep()"
                 >
                     ${
-                        currentStep === steps.length - 1
+                        currentStep === basicSteps.length - 1
                             ? "Finish"
                             : "Next"
                     }
@@ -95,81 +63,49 @@ function renderSessionStep() {
 
         </div>
     `;
-
-    messageBox.scrollIntoView({
-        behavior: "smooth"
-    });
 }
 
-function nextStep() {
-    const steps = getCurrentSteps();
-
-    if (currentStep < steps.length - 1) {
+function nextBasicStep() {
+    if (currentStep < basicSteps.length - 1) {
         currentStep++;
-        renderSessionStep();
+        renderBasicStep();
         return;
     }
 
-    showSessionComplete();
-}
-
-function previousStep() {
-    if (currentStep > 0) {
-        currentStep--;
-        renderSessionStep();
-    }
-}
-
-function showSessionComplete() {
-    const messageBox = document.getElementById("message");
-
-    messageBox.innerHTML = `
-        <div class="card session-card">
-
-            <h2>Session Complete</h2>
-
-            <p>
-                ${
-                    sessionType === "typical"
-                        ? "Typical ART session completed."
-                        : "Basic ART session completed."
-                }
-            </p>
+    document.getElementById("message").innerHTML = `
+        <div class="card">
+            <h2>Basic Session Complete</h2>
 
             <button
                 type="button"
-                onclick="returnHome()"
+                onclick="startBasicSession()"
             >
-                Return Home
+                Start Again
             </button>
-
         </div>
     `;
 }
 
-function returnHome() {
-    sessionType = "";
-    currentStep = 0;
+function previousBasicStep() {
+    if (currentStep > 0) {
+        currentStep--;
+        renderBasicStep();
+    }
+}
 
-    const messageBox = document.getElementById("message");
-    messageBox.innerHTML = "";
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+function startTypicalSession() {
+    document.getElementById("message").innerHTML = `
+        <div class="card">
+            <h2>Typical Session</h2>
+            <p>We will build this after the Basic Session is stable.</p>
+        </div>
+    `;
 }
 
 function showMessage(message) {
-    const messageBox = document.getElementById("message");
-
-    messageBox.innerHTML = `
-        <div class="card session-card">
+    document.getElementById("message").innerHTML = `
+        <div class="card">
             <h2>${message}</h2>
         </div>
     `;
-
-    messageBox.scrollIntoView({
-        behavior: "smooth"
-    });
 }

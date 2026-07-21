@@ -13,99 +13,96 @@ const basicSteps = [
 
 function startBasicSession() {
     currentStep = 0;
-    renderBasicStep();
+    renderStep();
 }
 
-function renderBasicStep() {
-    const messageBox = document.getElementById("message");
-    const stepTitle = basicSteps[currentStep];
+function renderStep() {
 
-    messageBox.innerHTML = `
+    document.getElementById("message").innerHTML = `
+
         <div class="card">
 
-            <p>
-                <strong>
-                    Step ${currentStep + 1} of ${basicSteps.length}
-                </strong>
-            </p>
-
-            <h2>${stepTitle}</h2>
+            <h2>${basicSteps[currentStep]}</h2>
 
             <p>
-                The content for this step will be added next.
+                Step ${currentStep + 1} of ${basicSteps.length}
             </p>
 
-            <div style="
-                display:flex;
-                justify-content:center;
-                gap:12px;
-                margin-top:20px;
-            ">
-                <button
-                    type="button"
-                    onclick="previousBasicStep()"
-                    ${currentStep === 0 ? "disabled" : ""}
-                >
-                    Previous
-                </button>
+            <button onclick="previousStep()" ${currentStep===0?"disabled":""}>
+                Previous
+            </button>
 
-                <button
-                    type="button"
-                    onclick="nextBasicStep()"
-                >
-                    ${
-                        currentStep === basicSteps.length - 1
-                            ? "Finish"
-                            : "Next"
-                    }
-                </button>
+            <button onclick="nextStep()">
+                ${currentStep===basicSteps.length-1?"Finish":"Next"}
+            </button>
+
+        </div>
+
+    `;
+}
+
+function nextStep(){
+
+    if(currentStep < basicSteps.length-1){
+
+        currentStep++;
+
+        renderStep();
+
+    }else{
+
+        document.getElementById("message").innerHTML=`
+
+            <div class="card">
+
+                <h2>Basic Session Complete</h2>
+
             </div>
 
-        </div>
-    `;
-}
+        `;
 
-function nextBasicStep() {
-    if (currentStep < basicSteps.length - 1) {
-        currentStep++;
-        renderBasicStep();
-        return;
     }
 
-    document.getElementById("message").innerHTML = `
-        <div class="card">
-            <h2>Basic Session Complete</h2>
-
-            <button
-                type="button"
-                onclick="startBasicSession()"
-            >
-                Start Again
-            </button>
-        </div>
-    `;
 }
 
-function previousBasicStep() {
-    if (currentStep > 0) {
+function previousStep(){
+
+    if(currentStep>0){
+
         currentStep--;
-        renderBasicStep();
+
+        renderStep();
+
     }
+
 }
 
-function startTypicalSession() {
-    document.getElementById("message").innerHTML = `
+function startTypicalSession(){
+
+    document.getElementById("message").innerHTML=`
+
         <div class="card">
+
             <h2>Typical Session</h2>
-            <p>We will build this after the Basic Session is stable.</p>
+
+            <p>Coming Next</p>
+
         </div>
+
     `;
+
 }
 
-function showMessage(message) {
-    document.getElementById("message").innerHTML = `
+function showMessage(message){
+
+    document.getElementById("message").innerHTML=`
+
         <div class="card">
+
             <h2>${message}</h2>
+
         </div>
+
     `;
+
 }

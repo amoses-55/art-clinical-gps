@@ -1,68 +1,111 @@
 const sessionSteps = [
     {
         title: "Opening Script",
-        prompt: "Introduce the ART process, explain eye movements, and confirm that the client feels ready to begin."
+        prompt: `
+        <p>Introduce the ART process.</p>
+
+        <ul>
+            <li>Explain bilateral eye movements.</li>
+            <li>Confirm the client understands the process.</li>
+            <li>Confirm the client is ready to begin.</li>
+        </ul>
+        `
     },
+
     {
         title: "Target Memory",
-        prompt: "Ask the client to identify the memory, image, or situation they want to work on."
+        prompt: `
+        <p>Ask the client to identify the target memory.</p>
+        `
     },
+
     {
         title: "Scene Match",
-        prompt: "Ask the client to notice whether the current scene matches the original event or another related memory."
+        prompt: `
+        <p>Help determine whether the image matches the original event.</p>
+        `
     },
+
     {
         title: "Utility Check",
-        prompt: "Ask whether there is any useful information, protection, or lesson the client wants to keep."
+        prompt: `
+        <p>Ask if there is anything useful about the memory that should be kept.</p>
+        `
     },
+
     {
         title: "Eye Movements",
-        prompt: "Guide one set of approximately 40 eye movements while the client notices the scene."
+        prompt: `
+        <h3>40 Eye Movements</h3>
+
+        <p>Complete one full set of bilateral eye movements.</p>
+
+        <button onclick="alert('Future versions will include a built-in eye movement timer.')">
+            Start Eye Movement Set
+        </button>
+        `
     },
-   {
-    title: "SUDS Rating",
-    prompt: `
-        <p>Ask the client to rate their current distress.</p>
 
-        <div class="suds-scale">
-            <label for="sudsRange">
-                Current SUDS: <strong><span id="sudsValue">5</span></strong>
-            </label>
+    {
+        title: "SUDS Rating",
 
-            <input
-                type="range"
-                id="sudsRange"
-                min="0"
-                max="10"
-                value="5"
-                step="1"
-                oninput="updateSuds(this.value)"
-            >
+        prompt: `
 
-            <div class="suds-labels">
-                <span>0<br>Calm</span>
-                <span>5<br>Moderate</span>
-                <span>10<br>Extreme</span>
-            </div>
+        <h3>Subjective Units of Distress Scale</h3>
 
-            <p id="sudsDescription">
-                Moderate distress. Uncomfortable but still functional.
-            </p>
+        <p><strong>Current SUDS:
+        <span id="sudsValue">5</span>/10</strong></p>
+
+        <input
+            type="range"
+            id="sudsRange"
+            min="0"
+            max="10"
+            value="5"
+            step="1"
+            oninput="updateSuds(this.value)"
+            style="width:100%;"
+        >
+
+        <div style="display:flex;justify-content:space-between;font-size:14px;">
+            <span>0</span>
+            <span>5</span>
+            <span>10</span>
         </div>
-    `
-},
+
+        <br>
+
+        <div id="sudsDescription">
+
+        Moderate distress.<br>
+        Uncomfortable but still functional.
+
+        </div>
+
+        `
+    },
+
     {
         title: "Body Scan",
-        prompt: "Ask the client to notice any remaining tension, discomfort, or activation in the body."
+        prompt: `
+        <p>Ask the client to notice any remaining body sensations.</p>
+        `
     },
+
     {
         title: "Future Template",
-        prompt: "Help the client imagine responding successfully in a future situation."
+        prompt: `
+        <p>Imagine successfully handling a similar future situation.</p>
+        `
     },
+
     {
         title: "Session Summary",
-        prompt: "Review changes, remaining concerns, and the client’s current level of distress."
+        prompt: `
+        <p>Review progress, remaining distress, and homework.</p>
+        `
     }
+
 ];
 
 let currentStep = 0;
@@ -73,69 +116,103 @@ function showMessage() {
 }
 
 function renderSessionStep() {
+
     const messageBox = document.getElementById("message");
+
     const step = sessionSteps[currentStep];
 
     messageBox.innerHTML = `
+
         <div class="session-card">
-            <p>Step ${currentStep + 1} of ${sessionSteps.length}</p>
+
             <h2>${step.title}</h2>
-           <div>${step.prompt}</div>
 
-            <div class="session-buttons">
-                <button onclick="previousStep()" ${currentStep === 0 ? "disabled" : ""}>
-                    Previous
-                </button>
+            <p><strong>Step ${currentStep + 1} of ${sessionSteps.length}</strong></p>
 
-                <button onclick="nextStep()">
-                    ${currentStep === sessionSteps.length - 1 ? "Finish" : "Next"}
-                </button>
-            </div>
+            ${step.prompt}
+
+            <br><br>
+
+            <button onclick="previousStep()"
+            ${currentStep===0?"disabled":""}>
+            ◀ Previous
+            </button>
+
+            <button onclick="nextStep()">
+            ${currentStep===sessionSteps.length-1?"Finish":"Next ▶"}
+            </button>
+
         </div>
+
     `;
-
-    messageBox.scrollIntoView({ behavior: "smooth" });
 }
 
-function nextStep() {
-    if (currentStep < sessionSteps.length - 1) {
+function nextStep(){
+
+    if(currentStep<sessionSteps.length-1){
+
         currentStep++;
+
         renderSessionStep();
-    } else {
-        document.getElementById("message").innerHTML = `
-            <div class="session-card">
-                <h2>Session Complete</h2>
-                <p>The guided session sequence is finished.</p>
-                <button onclick="showMessage()">Start Again</button>
-            </div>
+
+    }
+
+    else{
+
+        document.getElementById("message").innerHTML=`
+
+        <div class="session-card">
+
+        <h2>Session Complete</h2>
+
+        <p>The ART protocol is complete.</p>
+
+        <button onclick="showMessage()">
+
+        Start New Session
+
+        </button>
+
+        </div>
+
         `;
+
     }
+
 }
 
-function previousStep() {
-    if (currentStep > 0) {
+function previousStep(){
+
+    if(currentStep>0){
+
         currentStep--;
+
         renderSessionStep();
+
     }
+
 }
-function updateSuds(value) {
-    document.getElementById("sudsValue").textContent = value;
 
-    let description = "";
+function updateSuds(value){
 
-    if (value == 0) {
-        description = "Peace. No distress. Complete calm.";
-    } else if (value <= 2) {
-        description = "Slight distress. Sad or anxious, but functioning.";
-    } else if (value <= 4) {
-        description = "Mild to moderate distress. Still able to function.";
-    } else if (value <= 6) {
-        description = "Moderate distress. Uncomfortable but still functional.";
-    } else if (value <= 8) {
-        description = "Very distressed. Trouble focusing or functioning.";
-    } else {
-        description = "Extreme distress. May feel unable to function.";
-    }
+    document.getElementById("sudsValue").innerHTML=value;
 
-    document.getElementById("sudsDescription").textContent = description;
+    const descriptions=[
+
+        "Peace. No distress.",
+        "Very calm.",
+        "Slight distress.",
+        "Mild distress.",
+        "Mild to moderate distress.",
+        "Moderate distress.",
+        "Moderate to strong distress.",
+        "Strong distress.",
+        "Very distressed.",
+        "Extremely distressed.",
+        "Unbearably upset."
+
+    ];
+
+    document.getElementById("sudsDescription").innerHTML=descriptions[value];
+
 }
